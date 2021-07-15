@@ -1,60 +1,4 @@
 #include <stdio.h>
-
-////////////
-
-
-
-//general
-
-
-
-/////////////
-
-struct storage{
-	int key;
-};
-
-struct information{
-	char mask_left_edge;
-	char mask_right_edge;
-	struct storage *left_key;
-	struct storage *right_key;
-};
-
-struct top32{
-	unsigned int number;
-	char mask;
-	struct top32 *left;
-	struct top32 *right;
-	struct storage *key_top;
-	struct storage *key_range;
-	char height;
-};
-
-struct top128{
-	unsigned long long int number;
-	char mask;
-	struct top128 *left;
-	struct top128 *right;
-	struct storage *key_top;
-	struct storage *key_range;
-	char height;
-};
-
-//
-void read(){
-	char buffer_names[27] = "";
-	int number_of_file;
-	char 
-	FILE *file;
-	file = fopen("./data/");
-}
-
-//
-void scan_command(){
-
-}
-
 //////////////
 
 
@@ -296,10 +240,23 @@ struct top32 add32(struct top32 root, struct top32 new_struct, char *carry, stru
 	return root;
 }
 
-struct top32* add_info(struct top32 root, )
+//добавление информации в элемнты дерева при добавлении дерева
+struct top32* add_info(struct top32 root, struct add_range_information32 info)
+{
+	if (root->number < info.mask_right_edge && root->number > info.mask_left_edge){
+		root->key_range = info.key_range;
+		root->left = add_info(root->left, info);
+		root->right = add_info(root->right, info);
+	}
+	else if (root->number > info.mask_right_edge)
+		root->right = add_info(root->right, info);
+	else if (root->number < info.mask_left_edge)
+		root->left = add_info(root->left, info);
+	return root;
+}
 
 //функция вставки в дерево
-struct top32* insert32(struct top32 root, struct top32 new_struct)
+struct top32* insert32(struct top32 *root, struct top32 *new_struct)
 {
 	char height;
 	struct information data{0,0,NULL,NULL};
@@ -309,37 +266,92 @@ struct top32* insert32(struct top32 root, struct top32 new_struct)
 		root = add32(root, new_struct2, &height), data;	
 	}
 	root = balance32(root);
-	if( new_struct->mask < 32)
-		root = add_info(root);
+	if( new_struct->mask < 32){
+		struct add_range_information32 range_info{new_struct->number, new_struct2->number, new_struct->mask, new_struct->key_range}
+		root = add_info(root, range_info);
+	}
 	return root;
 }
 //блок функций добавления в дерево закончился
 
 
-
-////////////
-
-
-
-//128 digits
-
-
-
-////////////
-struct top128* create_top128(unsigned long long int number, struct top128 *left, struct top128 *right, char key, char mask)
+//блок функций поиска значения в дереве открывается
+//поиск ключа в дереве
+struct storage* search32(struct top32 *root, struct search32 *information)
 {
-	struct top128 *new_struct = malloc(sizeof(struct top32));
-	new_struct->number = number;
-	new_struct->mask = mask;
-	new_struct->key = key;
-	new_struct->height = 1;
-	new_struct->left = left;
-	new_struct->right = right;
-	return new_struct;
+	struct storage* find;
+	if (root->number == information.number)
+		return root->key_top;
+	if(!root->left && !root->right)
+		if (information.mask_left_edge > information.mask_right_edge)
+			return information.left_key;
+		else 
+			return information.right_key;
+	if(root->number > information.number){
+		information.mask_right_edge = root->mask;
+		information.right_key = root->key_range;
+		find = search32(root->left, information);
+	}
+	if(root->number < information.number){
+		information.mask_left_edge = root->mask;
+		information.left_key = root->key_range;
+		find = search32(root->right, information);
+	}
+	return find;
+}
+//блок функций поиска значений в дереве закрывается
+
+//блок удаления вершины из дерева открывается
+//удаление вершины
+void delete_struct(struct top32 *elem)
+{
+
 }
 
-
-int main(){
-	read();
-	scan_command();
+//нахождения минимума
+struct top32* search_min(struct top32 *root, struct top32** return_elem)
+{
+	if(root->left)
+		if (root->left->left){
+			root = search_min(root->left, );
+		} else {
+			*return_elem = root->left;
+			root->left = NULL;
+		}
+	return root;
 }
+
+//удаление вершины из дерева
+struct top32* delete_from_struct(struct top32 *root, struct top32 delete_struct)
+{
+	struct new_root = NULL;
+	if(root->mask == delete_struct->mask && root->number == delete_struct->number){
+		if(root->left){
+			root = search_min(root, &new_root);
+			new_root->left = root->left;
+			new_root->right = root->right;
+		}
+		delete_struct(root);
+		return new_root;
+	} else {
+		if (root->number < delete_struct->number)
+			root->right = delete_from_struct(root->right, delete_struct);
+		else
+			root->left = delete_from_struct(root->left, delete_struct);
+	}
+}
+
+//удаление
+struct top32* delete32(struct top32 *root, struct top32 delete_struct)
+{
+	if(delete_struct->mask == 32){
+		root = delete_from_struct(root, delete_struct);
+	} else {
+		struct delete_struct2 = restruct_top32(delete_struct);
+		root = delete_from_struct(root, delete_struct);
+		root = delete_from_struct(root, delete_struct2);
+		root = delete_range_from_struct(root, delete_struct);
+	}
+	root = balance32();
+}
+//блок удаления вершины из дерева закрывается
