@@ -3,22 +3,28 @@
 #include <string.h>
 
 
+#include "read.h"
+
+
 struct bit32
 {
-	unsigned int bit;
-	char mask;
-	char key;
-	struct bit32* next;
+	unsigned int *bit;
+	char *mask;
+	char *key;
 };
 
 struct bit128
 {
-	unsigned long long int bit;
-	char mask;
-	char key;
-	struct bit128* next;
-}
+	unsigned long long int *bit;
+	char *mask;
+	char *key;
+};
 
+struct all
+{
+	struct bit32 *head32;
+	struct bit128 *head128;
+};
 
 void input(int* bit, int* line_number, int* octet)
 {
@@ -39,7 +45,7 @@ char* add_strings(char** str)
 		len += strlen(*str2);
 		*str2++;
 	}
-	printf("%d\n", len);
+	//printf("%d\n", len);
 	str3 = malloc( (len+1) * sizeof(char));
 	len = i = 0;
 	while(str[i] != NULL) {
@@ -78,11 +84,12 @@ char* from_int_make_char(int number)
 }
 
 
-char* create_name_file(int bit, int line_number, int octet)
+char* create_name_file(int *bit, int *line_number)
 {
+	int octet;
+	input(bit, line_number, &octet);
 	char **vector = malloc(sizeof(char*) * 7);
-	char *bit_in_str = from_int_make_char(bit), *line_number_in_str = from_int_make_char(line_number), *octet_in_str = from_int_make_char(octet);
-	printf("%s, %s, %s\n", bit_in_str, line_number_in_str, octet_in_str);
+	char *bit_in_str = from_int_make_char(*bit), *line_number_in_str = from_int_make_char(*line_number), *octet_in_str = from_int_make_char(octet);
 	vector[0] = "./data/bit";
 	vector[1] = bit_in_str;
 	vector[2] = "_num";
@@ -102,21 +109,48 @@ char* create_name_file(int bit, int line_number, int octet)
 //часть с 128 бит начинается
 
 
-void print_node128(bit128 *head){
-	if(head){
-		printf("%llu - ip, %c - mask, %c - key ", head->bit, head->mask, head->key);
-		printf_node128(head->next);	
-	} 
+void print_node128(struct bit128 *head, int len)
+{
+	for (int i = 0; i < len; i++){
+		printf("%llu - ip, %c - mask, %c - key\n", (head->bit)[i], (head->mask)[i], (head->key)[i]);	
+	}
 }
 
+char read_word32(FILE* file, unsigned int *number32, char* flag)
+{
+	unsigned int number = 0;
+	unsigned char num = 0;
+	char c, space = 0;
+	while ( (c = fgetc(file)) != EOF && (c == ' ')) {};
 
-char read_word128(FILE* file, unsigned long long int *number128 = 0, bool* flag)
+	while ( (c != EOF) && (c != ' ') && ( c != '\n')){
+        if (c == '.' ){
+        	number *= 256;
+        	number += num;
+        	num = 0;
+        } else if (c <= '9' && c >= '0') {
+        	if(!space)
+        		space = !space;
+        	num *= 10;
+        	num += c - '0';
+        } else if (space) {
+        	*flag = 0;
+        	break;
+        }
+        c = fgetc(file);
+    }
+    number *= 256;
+    number += num;
+    *number32 = number;
+    return c;
+}
+
+char read_word128(FILE* file, unsigned long long int *number128, char* flag)
 {
 	unsigned long long int number = 0;
 	unsigned char num = 0;
-	bool space = false;
-	char c;
-	while (c = fgetc(file) != EOF && (c == ' ')) {};
+	char c, space = 0;
+	while ( (c = fgetc(file)) != EOF && (c == ' ')) {};
 
 	while ( (c != EOF) && (c != ' ') && ( c != '\n')){
         if (c == '.'){
@@ -127,9 +161,9 @@ char read_word128(FILE* file, unsigned long long int *number128 = 0, bool* flag)
         	if(!space)
         		space = !space;
         	num *= 10;
-        	num += с - '0';
+        	num += c - '0';
         } else if (space) {
-        	*flag = false;
+        	*flag = 0;
         	break;
         }
         c = fgetc(file);
@@ -139,40 +173,47 @@ char read_word128(FILE* file, unsigned long long int *number128 = 0, bool* flag)
 }
 
 
-struct bit32* open32(char* name_file, bool *flag)
+struct bit128* add_to_struct128(struct bit128* node, FILE *name_file, char *flag)
+{
+	unsigned long long int number128;
+	unsigned int number32;
+	int i = 0;
+	char c = ' ';
+	while(c != EOF){
+  		c = read_word128(name_file, &number128, flag);
+  		if(!flag) 
+  			break;
+  		node->bit[i] = number128;
+  		c = read_word32(name_file, &number32, flag);
+  		if(!flag)
+  			break;
+  		node->mask[i] = number32;
+  		c = read_word32(name_file, &number32, flag);
+  		if(!flag) 
+  			break;
+  		node->key[i] = number32;
+  		i++;
+  	}
+  	return node;
+};
+
+struct bit128* open128(char* name_file, char *flag, int line_number)
 {
 	FILE *file;
-	unsigned int number32;
-	unsigned long long int number128;
-	char c = ' ';
-	struct bit128 *node = NULL, *head = NULL;
-	if ((fp = fopen(name, "r")) == NULL){
+	if ((file = fopen(name_file, "r")) == NULL){
 	    printf("Не удалось открыть файл");
-	    *flag = false;
+	    *flag = 0;
 	    return NULL;
   	}
-  	while(c != EOF){
-  		node = malloc(sizeof(bit32));
-  		c = read32(name_file, &number128, *flag);
-  		if(!flag) 
-  			break;
-  		node->bit = number128;
-  		c = read32(name_file, &number32, *flag);
-  		if(!flag) 
-  			break;
-  		node->mask = number32;
-  		c = read32(name_file, &number32, *flag);
-  		if(!flag) 
-  			break;
-  		node->key = number32;
-  		if(!head)
-  			head = node;
-  		node = node->nest;
-  	}
+  	struct bit128 *node = malloc(sizeof(struct bit32));
+  	node->key = malloc(sizeof(char) * (line_number + 1));
+  	node->bit = malloc(sizeof(long long unsigned int) * (line_number +1));
+  	node->mask = malloc(sizeof(char) * (line_number + 1));
+  	node = add_to_struct128(node, file, flag);
+  	fclose(file);
   	if (!flag)
   		free(node);
-  	fclose(file);
-  	return head;
+  	return node;
 }
 
 
@@ -183,98 +224,78 @@ struct bit32* open32(char* name_file, bool *flag)
 //часть 32 бит открывается
 
 
-void print_node32(bit128 *head){
-	if(head){
-		printf("%u - ip, %c - mask, %c - key", head->bit, head->mask, head->key);
-		printf_node128(head->next);	
-	} 
-}
-
-
-char read_word32(FILE* file, unsigned int *number32 = 0, bool* flag)
+void print_node32(struct bit32 *head, int len)
 {
-	unsigned int number = 0;
-	unsigned char num = 0;
-	bool space = false;
-	char c;
-	while (c = fgetc(file) != EOF && (c == ' ')) {};
-
-	while ( (c != EOF) && (c != ' ') && ( c != '\n')){
-        if (c == '.'){
-        	number *= 256;
-        	number += num;
-        	num = 0;
-        } else if (c <= '9' && c >= '0') {
-        	if(!space)
-        		space = !space;
-        	num *= 10;
-        	num += с - '0';
-        } else if (space) {
-        	*flag = false;
-        	break;
-        }
-        c = fgetc(file);
-    }
-    number32 = &number;
-    return c;
+	for (int i = 0; i < len; i++){
+		printf("%u - ip, %d - mask, %d - key\n", head->bit[i], head->mask[i], head->key[i]);	
+	}
 }
 
+struct bit32* add_to_struct32(struct bit32* node, FILE *name_file, char *flag)
+{
+	unsigned int number, i = 0;
+	char c = ' ';
+	while(c != EOF){
+  		c = read_word32(name_file, &number, flag);
+  		if(!(*flag))
+  			break;
+  		node->bit[i] = number;
+  		c = read_word32(name_file, &number, flag);
+  		if(!(*flag))
+  			break;
+  		node->mask[i] = number;s
+  		c = read_word32(name_file, &number, flag);
+  		if(!(*flag))
+  			break;
+  		node->key[i] = number;
+  		i++;
+  	}
+  	return node;
+}
 
-struct bit32* open32(char* name_file, bool *flag)
+struct bit32* open32(char* name_file, char *flag, int line_number)
 {
 	FILE *file;
-	unsigned int number;
-	char c = ' ';
-	struct bit32 *node = NULL, *head = NULL;
-	if ((fp = fopen(name, "r")) == NULL){
+	if ((file = fopen(name_file, "r")) == NULL){
 	    printf("Не удалось открыть файл");
-	    *flag = false;
+	    *flag = 0;
 	    return NULL;
   	}
-  	while(c != EOF){
-  		node = malloc(sizeof(bit32));
-  		c = read32(name_file, &number, *flag);
-  		if(!flag) 
-  			break;
-  		node->bit = number;
-  		c = read32(name_file, &number, *flag);
-  		if(!flag) 
-  			break;
-  		node->mask = number;
-  		c = read32(name_file, &number, *flag);
-  		if(!flag) 
-  			break;
-  		node->key = number;
-  		if(!head)
-  			head = node;
-  		node = node->nest;
-  	}
+  	struct bit32 *node = malloc(sizeof(struct bit32));
+  	node->key = malloc(sizeof(char) * (line_number + 1));
+  	node->bit = malloc(sizeof(int) * (line_number +1));
+  	node->mask = malloc(sizeof(char) * (line_number + 1));
+  	node = add_to_struct32(node, file, flag);
   	fclose(file);
   	if (!flag)
   		free(node);
-  	return head;
+  	return node;
 }
 
 
 //часть 32 бита закрыта
 
 
-int main()
+int read(void)
 {
-	struct bit32 *head32;
-	struct bit128 *head128;
-	int bit, line_number, octet;
-	char* name_file;
-	name_file = create_name_file(bit, line_number, octet);
-	printf("%s\n", name_file);
+	struct bit32 *head32 = NULL;
+	struct bit128 *head128 = NULL;
+	struct all *elem = NULL;
+	int line_number, bit;
+	char *name_file, flag = 1;
+	name_file = create_name_file(&bit, &line_number);
+	printf("name file == %s\n", name_file);
 	if (bit == 32){
-		head32 = open32(name_file);
-		print_node32(head32);
+		head32 = open32(name_file, &flag, line_number);
+		//print_node32(head32, line_number);
 	}
-	else (bit == 128){
-		head128 = open128(name_file)
-		print_node128(head128);
+	else if (bit == 128) {
+		head128 = open128(name_file, &flag, line_number);
+		//print_node128(head128, line_number);
 	}
-
-	return 0;
+	elem = malloc(sizeof(struct all));
+	elem->head128 = head128;
+	elem->head32 = head32;
+	return elem;
+	//return 0;
 }

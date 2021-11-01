@@ -480,20 +480,15 @@ struct node* make_root(void)
 }
 
 
-int int main(int argc, char const *argv[])
-{
-	
-	return 0;
-}
-
+/*
 int main()
 {
 	struct node *root = make_root();
 
 
 }
+*/
 
-/*
 int main()
 {
 	struct node *root = make_root();
