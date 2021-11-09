@@ -6,26 +6,6 @@
 #include "read.h"
 
 
-struct bit32
-{
-	unsigned int *bit;
-	char *mask;
-	char *key;
-};
-
-struct bit128
-{
-	unsigned long long int *bit;
-	char *mask;
-	char *key;
-};
-
-struct all
-{
-	struct bit32 *head32;
-	struct bit128 *head128;
-};
-
 void input(int* bit, int* line_number, int* octet)
 {
 	printf("Input number of bit\n");
@@ -109,8 +89,9 @@ char* create_name_file(int *bit, int *line_number)
 //часть с 128 бит начинается
 
 
-void print_node128(struct bit128 *head, int len)
+void print_node128(struct bit128 *head)
 {
+	int len = head->line_number;
 	for (int i = 0; i < len; i++){
 		printf("%llu - ip, %c - mask, %c - key\n", (head->bit)[i], (head->mask)[i], (head->key)[i]);	
 	}
@@ -210,6 +191,7 @@ struct bit128* open128(char* name_file, char *flag, int line_number)
   	node->bit = malloc(sizeof(long long unsigned int) * (line_number +1));
   	node->mask = malloc(sizeof(char) * (line_number + 1));
   	node = add_to_struct128(node, file, flag);
+  	node->line_number = line_number;
   	fclose(file);
   	if (!flag)
   		free(node);
@@ -224,8 +206,9 @@ struct bit128* open128(char* name_file, char *flag, int line_number)
 //часть 32 бит открывается
 
 
-void print_node32(struct bit32 *head, int len)
+void print_node32(struct bit32 *head)
 {
+	int len = head->line_number;
 	for (int i = 0; i < len; i++){
 		printf("%u - ip, %d - mask, %d - key\n", head->bit[i], head->mask[i], head->key[i]);	
 	}
@@ -266,6 +249,7 @@ struct bit32* open32(char* name_file, char *flag, int line_number)
   	node->bit = malloc(sizeof(int) * (line_number +1));
   	node->mask = malloc(sizeof(char) * (line_number + 1));
   	node = add_to_struct32(node, file, flag);
+  	node->line_number = line_number;
   	fclose(file);
   	if (!flag)
   		free(node);
@@ -276,7 +260,7 @@ struct bit32* open32(char* name_file, char *flag, int line_number)
 //часть 32 бита закрыта
 
 
-int read(void)
+struct all* read(int *len)
 {
 	struct bit32 *head32 = NULL;
 	struct bit128 *head128 = NULL;
@@ -296,6 +280,7 @@ int read(void)
 	elem = malloc(sizeof(struct all));
 	elem->head128 = head128;
 	elem->head32 = head32;
+	len* = line_number;
 	return elem;
 	//return 0;
 }

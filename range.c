@@ -1,16 +1,21 @@
 #include <stdlib.h>
 
+#include"range.h"
 
 
-struct range{
-	unsigned int begin;
-	unsigned int end;
-	unsigned int max;
-	unsigned char height;
-	char key;
-	struct range *left;
-	struct range *rigth;
-};
+//создание одной вершины
+struct range* create_top(int number1, int number2, char key)
+{
+	struct range *top = malloc(sizeof(struct range));
+	top->begin = number1;
+	top->end = number2;
+	top->key = key;
+	top->height = 1;
+	top->left + NULL;
+	top->rigth = NULL;
+	return top;
+}
+
 
 void small_left_rotation(struct range** head)
 {
@@ -57,8 +62,7 @@ void balanced_range_tree(struct range **head)
 	}
 }	
 
-
-void insert_in_range_tree(struct range **head, struct range *new_elem)
+void add_in_range_tree(struct range **head, struct range *new_elem)
 {
 
 	if (*head == NULL){
@@ -66,13 +70,29 @@ void insert_in_range_tree(struct range **head, struct range *new_elem)
 		return;
 	}
 	if ((*head)->begin < new_elem->begin)
-		insert_in_range_tree(&((*head)->left), new_elem);
+		add_in_range_tree(&((*head)->left), new_elem);
 	else 
-		insert_in_range_tree( &((*head)->rigth), new_elem);
+		add_in_range_tree( &((*head)->rigth), new_elem);
 	
+	(*head)->height = (*head)->left ? (*head)->rigth ? (  (*head)->left->height > (*head)->rigth->height  ) ? (*head)->left->height + 1 : (*head)->rigth->height + 1 : (*head)->left->height + 1 ? (*head)->rigth : (*head)->rigth->height + 1 : 1;
 	balanced_range_tree(head);
 	return;
 }
+
+void insert_in_range_tree(struct range **head, struct top32 elem)
+{
+	unsigned int number1 = elem.number, number2;
+	char shift = 32 - elem.mask;
+	number1 = number >> shift;
+	number2 = number1;
+	number1 = number1 << shift;
+	number2 += 1;
+	number2 >> shift;
+	number2 -= 1;
+	struct range *insert_top = create_top(number1, number2, elem.key);
+	add_in_range_tree(head, insert_top);
+}
+
 
 int search_in_range_tree(struct range **head, int number, char *key)
 {
@@ -99,35 +119,57 @@ int search_in_range_tree(struct range **head, int number, char *key)
 		return len;
 }
 
-void delete_elem(struct range **head)
+
+void delete_elem(struct range **head, struct range **new_head)
 {
-	struct range *new_head = (*head)->rigth; 
-	if (new_head == NULL){
-		free(*head);
+	if (!(*head)->left){
+		*new_head = *head;
 		return;
+	} else{ 
+		delete_elem((*head)->left, new_head); 
+	} 
+	if (!(*head)->left->left) {
+		(*head)->left = (*head)->left->rigth;
+		(*head)->height = (*head)->left ? (*head)->rigth ? (  (*head)->left->height > (*head)->rigth->height  ) ? (*head)->left->height + 1 : (*head)->rigth->height + 1 : (*head)->left->height + 1 ? (*head)->rigth : (*head)->rigth->height + 1 : 1;
 	}
-	struct range *last = *head, *delete_elem = *head;
-	while(new_head->left != NULL){
-		last = new_head;
-		new_head = new_head->left;
-	}
-	last->left = new_head->rigth;
-	new_head->left = (*head)->left;
-	new_head->rigth = (*head)->rigth;
-	*head = new_head;
-	free(delete_elem);
+	balanced_range_tree(head);
 }
 
-void delete_from_range_tree(struct range** head, struct range *elem)
+
+void del_from_range_tree(struct range** head, struct range *elem)
 {
 	if (*head == NULL)
 		return;
 	if ((*head)->begin == elem->begin && (*head)->end == elem->end){
-		delete_elem(head);
+		struct range *new_head = NULL;
+		delete_elem(&((*head)->rigth), &new_head);
+		new_head->left = (*head)->left;
+		new_head->rigth = (*head)->rigth;
+		free(*head);
+		*head = new_head;
 		return;
 	}
 	if ((*head)->begin < elem->begin)
-		delete_from_range_tree( &((*head)->rigth), elem);
+		del_from_range_tree( &((*head)->rigth), elem);
 	else 	
-		delete_from_range_tree( &((*head)->left), elem);
+		del_from_range_tree( &((*head)->left), elem);
+
+	(*head)->height = (*head)->left ? (*head)->rigth ? (  (*head)->left->height > (*head)->rigth->height  ) ? (*head)->left->height + 1 : (*head)->rigth->height + 1 : (*head)->left->height + 1 ? (*head)->rigth : (*head)->rigth->height + 1 : 1;
+}
+
+void delete_from_range_tree(struct range** head, struct elem)
+{
+	unsigned int number1 = elem.number, number2;
+	char shift = 32 - elem.mask;
+	number1 = number >> shift;
+	number2 = number1;
+	number1 = number1 << shift;
+	number2 += 1;
+	number2 >> shift;
+	number2 -= 1;
+	struct range *delte_top = malloc(sizeof(struct range));
+	delete_top->begin = number1;
+	delete_top->end = number2;
+	delete_top->key = elem.key;
+	del_from_range_tree(head, delete_top);
 }

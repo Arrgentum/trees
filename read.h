@@ -2,11 +2,27 @@
 #define READ_H_
 
 
-struct bit32;
+struct bit32
+{
+	int line_number;
+	unsigned int *bit;
+	char *mask;
+	char *key;
+};
 
-struct bit128;
+struct bit128
+{
+	int line_number;
+	unsigned long long int *bit;
+	char *mask;
+	char *key;
+};
 
-struct all;
+struct all
+{
+	struct bit32 *head32;
+	struct bit128 *head128;
+};
 
 
 
