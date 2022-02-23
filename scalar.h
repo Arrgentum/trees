@@ -16,7 +16,7 @@ struct scalar{
 };
 
 struct data{
-	unsigned char number;
+	unsigned int number;
 	char key;
 	char length;
 	char mask;
