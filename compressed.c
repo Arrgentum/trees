@@ -117,9 +117,9 @@ unsigned char length_prefix(struct compressed *tmp, struct data info, char *flag
 		number_search = number_search >> 1;
 	}
 	shift = 32 - info.length + tmp->length - info.mask;
-	number_search = (info.length == 32) ? number_search : info.number & ((1 << tmp->length)-1);
+	number_search = (info.length == 32) ? number_search : number_search & ((1 << tmp->length)-1);
 	//number_search = number_search & ((1 << tmp->length) - 1);
-	//printf("number_search = %u, number_node = %u\n", number_search, number_node);
+	printf("number_search = %u, number_node = %u\n", number_search, number_node);
 	if(info.mask != 32 && shift > 0 ){
 		number_search = number_search >> shift;
 		number_node = number_node >> shift;
@@ -258,7 +258,9 @@ void del_from_compressed_tree(struct compressed **head, struct data info)
 		delete_tree(&(parent->left));
 		parent->left = NULL;
 	}
-	if(parent == *head)
+	if (tmp == parent)
+		delete_tree(head);
+	else if(parent == *head)
 		*head = remake(*head);
 	else if(flag_grand)
 		grand->right = remake(grand->right);
@@ -345,7 +347,7 @@ int main()
 	struct compressed *root = create_top(0,-1,0);
 	unsigned int* array_int = make_array_int(), i;
 	struct data info = {0, 0, 32, 32};
-	for(i = 0; i < 12; i++){
+	for(i = 0; i < 3; i++){
 		info.number = array_int[i];
 		info.key = i;
 		//if(i == 1)
@@ -356,16 +358,20 @@ int main()
 		print_tree(root);
 	}
 	printf("\nEND_INSERT\n\n");
+	for (i = 0; i < 2; i++){
+		info.number = array_int[i];
+		delete_from_compressed_tree(&root, info);
+		print_tree(root);
+	}
+
+	//print_tree(root);
 	info.number = array_int[10];
-	delete_from_compressed_tree(&root, info);
-	print_tree(root);
-	info.number = array_int[1];
 	info.mask = 32;
-	delete_from_compressed_tree(&root, info);
+	//delete_from_compressed_tree(&root, info);
 	//print_tree(root);
 	char search_key = search_in_compressed_tree(root, info);
 	printf("ключ поиска = %d\n", search_key);
 	delete_tree(&root);
-	print_tree(root);
+	//print_tree(root);
 	return 0;
 }
