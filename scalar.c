@@ -374,7 +374,7 @@ int main()
 		print_tree(root);
 	}
 	printf("\nEND_INSERT\n\n");
-	info.number = array_int[10];
+	info.number = array_int[5];
 	delete_from_scalar_tree(&root, info);
 	print_tree(root);
 	info.number = array_int[1];
