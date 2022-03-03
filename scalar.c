@@ -366,9 +366,14 @@ int main()
 	for(i = 0; i < 12; i++){
 		info.number = array_int[i];
 		info.key = i;
-		//if(i == 1)
-		//	info.mask = 10;
-		info.mask = i == 1 ? 10 : 32;
+		//info.mask = i == 1 ? 10 : 32;
+		switch(i){
+			case 1: info.mask = 10; break;
+			case 4: info.mask = 14; break;
+			case 8: info.mask = 24; break;
+			case 10: info.mask = 20; break;
+			default: info.mask = 32
+		}
 		printf("\n\n номер = %d  ,  ip = %u  ,  len  =  %d,  mask =  %d\n\n", i, info.number, info.length, info.mask);
 		insert_in_scalar_tree(&root, info);
 		print_tree(root);
@@ -377,7 +382,7 @@ int main()
 	info.number = array_int[5];
 	delete_from_scalar_tree(&root, info);
 	print_tree(root);
-	info.number = array_int[1];
+	info.number = array_int[4];
 	info.mask = 32;
 	delete_from_scalar_tree(&root, info);
 	//print_tree(root);
