@@ -3,7 +3,6 @@
 #include"range.h"
 
 
-
 void print_tree(struct range *root)
 {
 	if (root){
@@ -91,7 +90,6 @@ void fixheight(struct range **head)
 
 struct range* small_left_rotation(struct range* head)
 {
-	printf("small_left_rotation\n");
 	struct range* new_head = head->right;
 	head->right = new_head->left;
 	new_head->left = head;
@@ -104,7 +102,6 @@ struct range* small_left_rotation(struct range* head)
 
 struct range* small_right_rotation(struct range* head)
 {
-	printf("small_right_rotation\n");
 	struct range *new_head = head->left;
 	head->left = new_head->right;
 	new_head->right = head;
@@ -117,7 +114,6 @@ struct range* small_right_rotation(struct range* head)
 
 struct range* big_left_rotation(struct range* head)
 {
-	printf("big_left_rotation\n");
 	print_tree(head);
 	head->right = small_right_rotation(head->right);
 	head = small_left_rotation(head);
@@ -126,7 +122,6 @@ struct range* big_left_rotation(struct range* head)
 
 struct range* big_right_rotation(struct range* head)
 {
-	printf("big_right_rotation\n");
 	head->left = small_left_rotation(head->left);
 	head = small_right_rotation(head);
 	return head;
@@ -135,8 +130,6 @@ struct range* big_right_rotation(struct range* head)
 
 void balanced_range_tree(struct range **head)
 {
-	printf("balanced_range_tree\n");
-	//print_tree(*head);
 	struct range *tmp = *head;
 	if (  (tmp->right && tmp->left && tmp->left->height - tmp->right->height == 2)  ||  (!tmp->right && tmp->left && tmp->left->height >= 2)){
 		if ((tmp->left->right && tmp->left->left && tmp->left->left->height > tmp->left->right->height)  ||  (tmp->left->left && !tmp->left->right))
@@ -150,12 +143,10 @@ void balanced_range_tree(struct range **head)
 		else
 			*head = big_left_rotation(*head);
 	}
-	//max(head);
 }	
 
 void add_in_range_tree(struct range **head, struct range *new_elem)
 {
-	printf("add_in_range_tree\n");
 	if (*head == NULL){
 		*head = new_elem;
 		return;
@@ -180,7 +171,6 @@ void insert_in_range_tree(struct range **head, struct data info)
 	number2 = number1 + 1;
 	number1 = number1 << shift;
 	number2 = (number2 << shift) - 1;
-	printf("1 = %u, 2 = %u\n", number1, number2);
 	struct range *insert_top = create_top(number1, number2, info.key);
 	add_in_range_tree(head, insert_top);
 }
@@ -227,7 +217,6 @@ void delete_elem(struct range **head, struct range **new_head)
 	if (!(*head)->left){
 		*new_head = *head;
 		*head = (*head)->right;
-		printf("1 = %u, 2 = %u, max = %u, height = %u, key = %u\n", (*head)->begin, (*head)->end, (*head)->max, (*head)->height, (*head)->key);
 		return; 
 	}
 	delete_elem(&((*head)->left), new_head);  
@@ -247,7 +236,6 @@ void delete_from_range_tree(struct range** head, struct data info)
 		return;
 	if ((*head)->begin == number1 && (*head)->end == number2){
 		struct range *new_head = NULL;
-		printf("1 = %u, 2 = %u, max = %u, height = %u, key = %u\n", (*head)->begin, (*head)->end, (*head)->max, (*head)->height, (*head)->key);
 		if ((*head)->right){
 			delete_elem(&((*head)->right), &new_head);
 			new_head->left = (*head)->left;
@@ -343,26 +331,15 @@ int main()
 	for(i = 0; i < 13; i++){
 		info.number = array_int[i];
 		info.key = i;
-		//if(i == 1)
-		//	info.mask = 10;
-		//info.mask = i == 1 ? 10 : 32;
-		printf("\n\n номер = %d  ,  ip = %u  ,  len  =  %d,  mask =  %d\n\n", i, info.number, info.length, info.mask);
 		insert_in_range_tree(&root, info);
-		print_tree(root);
 	}
-	printf("\nEND_INSERT\n\n");
 	info.number = array_int[10];
 	delete_from_range_tree(&root, info);
 	info.number = array_int[4];
 	delete_from_range_tree(&root,info);
 	print_tree(root);
 	info.number = array_int[1];
-	//info.mask = 32;
-	//delete_from_range_tree(&root, info);
-	//print_tree(root);
 	char search_key = search_in_range_tree(root, info);
 	printf("ключ поиска = %d\n", search_key);
-	//delete_tree(&root);
-	//print_tree(root);
 	return 0;
 }

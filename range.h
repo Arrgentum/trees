@@ -1,7 +1,6 @@
 #ifndef RANGE_H_   /* Include guard */
 #define RAHGE_H_
 
-#include"top.h"
 #include <stdio.h>
 
 
@@ -47,5 +46,6 @@ void delete_elem(struct range **head, struct range **new_elem);
 void del_from_range_tree(struct range** head, struct range *elem);
 
 void delete_from_range_tree(struct range** head, struct data elem);
+
 
 #endif // RANGE_H_

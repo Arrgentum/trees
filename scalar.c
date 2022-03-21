@@ -1,6 +1,5 @@
 #include "scalar.h"
 
-
 //удаления дерева 
 void delete_tree(struct scalar **root)
 {
@@ -10,7 +9,6 @@ void delete_tree(struct scalar **root)
 		free(*root);
 	}
 }
-
 
 //функция выводит все значния дерева левым обходом
 void recourse_print_tree(struct scalar *tmp, int number, char length)
@@ -59,10 +57,9 @@ struct scalar* create_top(unsigned char number, char key, char length)
 //функция строит череду из вершин
 struct scalar* build_top(struct data info, struct scalar *add_ver)
 {
-	if(/*info.length == 0 || */info.length + info.mask == 32)
+	if(info.length + info.mask == 32)
 		return NULL;
 	struct scalar *tmp;
-	//printf("build top : ip = %u, mask = %d, len = %d\n", info.number, info.mask, info.length);
 	unsigned int number = info.number;
 	unsigned char flag = 0, num;
 	if(info.length > 8) {
@@ -72,7 +69,6 @@ struct scalar* build_top(struct data info, struct scalar *add_ver)
 		number = number >> 1;
 		num = number;
 		tmp = create_top(num, -1, 8);
-		//printf("num = %u, len = %d, key = %d\n", tmp->number, tmp->length, tmp->key);
 		info.length -= tmp->length;
 		if(flag)
 			tmp->right = build_top(info, add_ver);
@@ -81,7 +77,6 @@ struct scalar* build_top(struct data info, struct scalar *add_ver)
 	} else {
 		num = info.number & ( (1 << info.length) - 1);
 		tmp = create_top(num, info.key, info.length);
-		//printf("num = %u, len = %d, key = %d\n", tmp->number, tmp->length, tmp->key);
 		if(add_ver != NULL){
 			tmp->left = add_ver->left;
 			tmp->right = add_ver->right;
@@ -96,7 +91,6 @@ struct scalar* remake(struct scalar *tmp)
 {
 	unsigned int number = 0;
 	char key = -1 , length = 0;
-	//print_tree(tmp);
 	struct scalar* ver;
 	while(tmp){
 		number = number << tmp->length;
@@ -116,9 +110,7 @@ struct scalar* remake(struct scalar *tmp)
 		free(ver);
 	}
 	struct data info = {number, key, length, length};
-	//printf("num = %u, len = %d, mask = %d, key = %d\n", info.number, info.length, info.mask, info.key);
 	ver = build_top(info, tmp);
-	//print_tree(tmp);
 	if(tmp)
 		free(tmp);
 	return ver;
@@ -160,7 +152,7 @@ void break_top(struct scalar **tmp, struct data info, char length, char bit)
 	unsigned char prefix = (*tmp)->number >> ((*tmp)->length - length);
 	(*tmp)->number = (prefix << ((*tmp)->length - length)) ^ (*tmp)->number;
 	(*tmp)->length -= length;
-	if(/*info.length > 0*/ info.length + info.mask != 32){
+	if(info.length + info.mask != 32){
 		top_node = create_top(prefix, -1, length);
 		number_node = build_top(info, NULL);
 	} else
@@ -185,9 +177,7 @@ void add_in_scalar_tree(struct scalar **head, struct data info)
 		*head = build_top(info, NULL);
 		return;
 	}
-	//printf("top_number = %d, top_len = %d,  ", (*head)->number, (*head)->length);
 	char length = length_prefix(*head, info, &bit);
-	//printf("prefix = %d\n", length);
 	info.length -= length;
 	if(length == (*head)->length){
 		if(32 - info.length == info.mask)
@@ -244,7 +234,6 @@ void del_from_scalar_tree(struct scalar **head, struct data info)
 	char flag_parent, flag_grand, bit;
 	while(tmp){
 		unsigned char length = length_prefix(tmp, info, &bit);
-		//printf("number_node = %d, node_len = %d\n", tmp->number, tmp->length);
 		if(length != tmp->length)
 			return;
 		info.length -= length;
@@ -263,8 +252,6 @@ void del_from_scalar_tree(struct scalar **head, struct data info)
 		else
 			tmp = tmp->left;
 	}
-	//print_tree(grand);
-	//print_tree(parent);
 	if(tmp->left || tmp->right){
 		tmp->key = -1;
 		*head = remake(parent);
