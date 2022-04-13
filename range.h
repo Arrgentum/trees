@@ -2,7 +2,7 @@
 #define RAHGE_H_
 
 #include <stdio.h>
-
+#include "data.h"
 
 struct range{
 	unsigned int begin;
@@ -12,14 +12,6 @@ struct range{
 	struct range *right;
 	unsigned char height;
 	char key;
-};
-
-
-struct data{
-	unsigned int number;
-	char key;
-	char length;
-	char mask;
 };
 
 
