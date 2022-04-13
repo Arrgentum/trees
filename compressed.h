@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "data.h"
 
 
 struct compressed{
@@ -15,22 +16,14 @@ struct compressed{
 	struct compressed *right;
 };
 
-struct data{
-	unsigned int number;
-	char key;
-	char length;
-	char mask;
-};
 
+void delete_compressed_tree(struct compressed **root);
 
-
-void delete_tree(struct compressed **root);
-
-void recourse_print_tree(struct compressed *tmp, int number, char length);
+void recourse_print_compressed_tree(struct compressed *tmp, int number, char length);
 
 void print_tree(struct compressed *root);
 
-struct compressed* create_top(unsigned int number, char key, char length);
+struct compressed* create_compressed_top(unsigned int number, char key, char length);
 
 struct compressed* build_top(struct data info, struct compressed *add_ver);
 
