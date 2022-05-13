@@ -1,4 +1,21 @@
+#include <stdlib.h>
 #include "scalar.h"
+
+
+
+int find_numer_node(struct scalar *root){
+	if (root){
+		int left = 0, right = 0;
+		if(root->left)
+			left = find_numer_node(root->left);
+		if (root->right)
+			right = find_numer_node(root->right);
+		return left + right + 1;
+	} else {
+		return 0;
+	}
+
+}
 
 //удаления дерева 
 void delete_tree(struct scalar **root)
@@ -129,13 +146,16 @@ unsigned char length_prefix(struct scalar *tmp, struct data info, char *flag)
 		car = number_search & 1;
 		number_search = number_search >> 1;
 	}
+	printf("info.len = %d, tmp_len = %d, info.mask = %d, ", info.length, tmp->length, info.mask);
 	shift = 32 - info.length + tmp->length - info.mask;
+	printf("shift = %d ", shift);
 	number_search_2 = number_search & ((1 << tmp->length) - 1); 
 	if(info.mask != 32 && shift > 0 ){
 		number_search_2 = number_search_2 >> shift;
 		number_node = number_node >> shift;
 		i-=shift;
 	}
+	printf("number_search_2 = %u, number_node = %u\n", number_search_2, number_node);
 	while(number_node != number_search_2){
 		car = number_search_2 & 1;
 		number_search_2 = number_search_2 >> 1;
@@ -282,6 +302,25 @@ void delete_from_scalar_tree(struct scalar **head, struct data info)
 }
 
 
+static void display_mallinfo2(void)
+{
+   struct mallinfo mi;
+
+   mi = mallinfo();
+
+   printf("Total non-mmapped bytes (arena):       %u\n", mi.arena);
+   printf("# of free chunks (ordblks):            %u\n", mi.ordblks);
+   printf("# of free fastbin blocks (smblks):     %u\n", mi.smblks);
+   printf("# of mapped regions (hblks):           %u\n", mi.hblks);
+   printf("Bytes in mapped regions (hblkhd):      %u\n", mi.hblkhd);
+   printf("Max. total allocated space (usmblks):  %u\n", mi.usmblks);
+   printf("Free bytes held in fastbins (fsmblks): %u\n", mi.fsmblks);
+   printf("Total allocated space (uordblks):      %u\n", mi.uordblks);
+   printf("Total free space (fordblks):           %u\n", mi.fordblks);
+   printf("Topmost releasable block (keepcost):   %u\n", mi.keepcost);
+}
+
+
 
 int main()
 {
@@ -304,12 +343,32 @@ int main()
 	else 
 		line_number = max - min;
 
+	display_mallinfo2();
+	sleep(10);
+
 	for(int i = 0; i < line_number; i++){
 		info.key = i % max_key;
 		info.mask = 32 - rand() % (32 - mask_length);
-		printf("number  = %d, mask = %d, key = %d\n", info.number, info.mask, info.key);
+		//printf("number  = %d, mask = %d, key = %d\n", info.number, info.mask, info.key);
 		insert_in_scalar_tree(&root, info);
+		//print_tree(root);
 		info.number += delta;
 	}
-	print_tree(root);
+	sleep(10);
+	int node_number = find_numer_node(root);
+	printf("node number = %d\n", node_number);
+	/*union ticks{
+	unsigned long long t64;
+	struct s32 { long th, tl; } t32;
+	} start, end;
+	double cpu_Hz = 3000000000ULL; // for 3 GHz CPU
+	asm("rdtsc\n":"=a"(start.t32.th),"=d"(start.t32.tl));
+    int search_key = search_in_scalar_tree(root, info);
+    asm("rdtsc\n":"=a"(end.t32.th),"=d"(end.t32.tl));
+    printf("Proscess tact : %lld\n", end.t64-start.t64 );
+	printf("Time taken: %lf sec.\n", (end.t64-start.t64)/cpu_Hz);*/
+	//printf("search key = %d\n", search_key);
+	//print_tree(root);
+	display_mallinfo2();
+	return 0;
 }

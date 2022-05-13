@@ -1,5 +1,6 @@
 #include "compressed.h"
 
+
 //удаления дерева 
 void delete_tree(struct compressed **root)
 {
@@ -10,8 +11,9 @@ void delete_tree(struct compressed **root)
 	}
 }
 
+
 //функция выводит все значния дерева левым обходом
-void recourse_print_tree(struct compressed *tmp, int number, char length)
+void recourse_print_comressed_tree(struct compressed *tmp, int number, char length)
 {
 	if(tmp){
 		printf("node_number = %d , length = %d\n", tmp->number, tmp->length);
@@ -23,27 +25,26 @@ void recourse_print_tree(struct compressed *tmp, int number, char length)
 		}
 		if(tmp->left){
 			printf("left\n");
-			recourse_print_tree(tmp->left, number, length);
+			recourse_print_compressed_tree(tmp->left, number, length);
 		}
 		if(tmp->right){
 			printf("right\n");
-			recourse_print_tree(tmp->right, number, length);
+			recourse_print_compressed_tree(tmp->right, number, length);
 		}
 	} 
 }
 
+
 void print_tree(struct compressed *root)
 {
 	printf("//////  start__print__tree_  ///////\n\n");
-	recourse_print_tree(root, 0, 0);
+	recourse_print_compressed_tree(root, 0, 0);
 	printf("//////  end__print__tree_  ///////\n\n\n");
 }
 
 
-
-
 //функция возвращает построенную вершину с заданными критериями
-struct compressed* create_top(unsigned int number, char key, char length)
+struct compressed* create_compressed_top(unsigned int number, char key, char length)
 {
 	struct compressed *new_top = malloc(sizeof(struct compressed));
 	new_top->length = length;
@@ -60,7 +61,7 @@ struct compressed* build_top(struct data info, struct compressed *add_ver)
 	if(info.length + info.mask == 32)
 		return NULL;
 	unsigned int number = (info.length == 32) ? info.number : info.number & ((1 << info.length)-1);
-	struct compressed *tmp = create_top(number, info.key, info.length);
+	struct compressed *tmp = create_compressed_top(number, info.key, info.length);
 	if(add_ver != NULL){
 		tmp->left = add_ver->left;
 		tmp->right = add_ver->right;
@@ -128,6 +129,7 @@ unsigned char length_prefix(struct compressed *tmp, struct data info, char *flag
 	return i;
 }
 
+
 //функция разбивает вершину и добавляемую вершину на 3 вершины - общую (родительскую) и 2 дочерних
 void break_top(struct compressed **tmp, struct data info, char length, char bit)
 {
@@ -136,10 +138,10 @@ void break_top(struct compressed **tmp, struct data info, char length, char bit)
 	(*tmp)->number = (prefix << ((*tmp)->length - length)) ^ (*tmp)->number;
 	(*tmp)->length -= length;
 	if(info.length + info.mask != 32){
-		top_node = create_top(prefix, -1, length);
+		top_node = create_compressed_top(prefix, -1, length);
 		number_node = build_top(info, NULL);
 	} else
-		top_node = create_top(prefix, info.key, length);
+		top_node = create_compressed_top(prefix, info.key, length);
 	any_node = remake(*tmp);
 	if (bit){
 		top_node->left = any_node;
@@ -186,6 +188,7 @@ void insert_in_compressed_tree(struct compressed **head, struct data info)
 	}
 }
 
+
 //поиск элемента, возвращает 1, если нашел с длиной маски 32
 char search_in_compressed_tree(struct compressed *head, struct data info)
 {
@@ -210,6 +213,7 @@ char search_in_compressed_tree(struct compressed *head, struct data info)
 	}
 	return key;
 }
+
 
 //поиск элемента для удаления и удаление
 void del_from_compressed_tree(struct compressed **head, struct data info)
@@ -332,7 +336,7 @@ unsigned int* make_array_int(void)
 
 int main()
 {
-	struct compressed *root = create_top(0,-1,0);
+	struct compressed *root = create_compressed_top(0,-1,0);
 	unsigned int* array_int = make_array_int(), i;
 	struct data info = {0, 0, 32, 32};
 	for(i = 0; i < 3; i++){
@@ -364,7 +368,7 @@ int main()
 	//print_tree(root);
 	char search_key = search_in_compressed_tree(root, info);
 	printf("ключ поиска = %d\n", search_key);
-	delete_tree(&root);
+	delete_compressed_tree(&root);
 	//print_tree(root);
 	return 0;
 }

@@ -1,18 +1,20 @@
 #ifndef SCALAR_H_   /* Include guard */
 #define SCALAR_H_
 
+#include <unistd.h> 
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <malloc.h>
 #include "data.h"
 
 struct scalar{
+	struct scalar *left;
+	struct scalar *right;
 	unsigned char number;
 	char key;
 	char length;
-	struct scalar *left;
-	struct scalar *right;
 };
 
 

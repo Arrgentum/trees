@@ -1,7 +1,7 @@
 #include "scalar.h"
 
 //удаления дерева 
-void delete_tree(struct scalar **root)
+void delete_scalar_tree(struct scalar **root)
 {
 	if(*root != NULL){
 		delete_tree(&(*root)->left);
@@ -11,7 +11,7 @@ void delete_tree(struct scalar **root)
 }
 
 //функция выводит все значния дерева левым обходом
-void recourse_print_tree(struct scalar *tmp, int number, char length)
+void recourse_print_scalar_tree(struct scalar *tmp, int number, char length)
 {
 	if(tmp){
 		printf("node_number = %d , length = %d\n", tmp->number, tmp->length);
@@ -23,11 +23,11 @@ void recourse_print_tree(struct scalar *tmp, int number, char length)
 		}
 		if(tmp->left){
 			printf("left\n");
-			recourse_print_tree(tmp->left, number, length);
+			recourse_print_scalar_tree(tmp->left, number, length);
 		}
 		if(tmp->right){
 			printf("right\n");
-			recourse_print_tree(tmp->right, number, length);
+			recourse_print_scalar_tree(tmp->right, number, length);
 		}
 	} 
 }
@@ -35,7 +35,7 @@ void recourse_print_tree(struct scalar *tmp, int number, char length)
 void print_tree(struct scalar *root)
 {
 	printf("//////  start__print__tree_  ///////\n\n");
-	recourse_print_tree(root, 0, 0);
+	recourse_print_scalar_tree(root, 0, 0);
 	printf("//////  end__print__tree_  ///////\n\n\n");
 }
 
@@ -43,7 +43,7 @@ void print_tree(struct scalar *root)
 
 
 //функция возвращает построенную вершину с заданными критериями
-struct scalar* create_top(unsigned char number, char key, char length)
+struct scalar* create_scalar_top(unsigned char number, char key, char length)
 {
 	struct scalar *new_top = malloc(sizeof(struct scalar));
 	new_top->length = length;
@@ -55,7 +55,7 @@ struct scalar* create_top(unsigned char number, char key, char length)
 }
 
 //функция строит череду из вершин
-struct scalar* build_top(struct data info, struct scalar *add_ver)
+struct scalar* build_scalar_top(struct data info, struct scalar *add_ver)
 {
 	if(info.length + info.mask == 32)
 		return NULL;
@@ -68,15 +68,15 @@ struct scalar* build_top(struct data info, struct scalar *add_ver)
 			flag = 1;
 		number = number >> 1;
 		num = number;
-		tmp = create_top(num, -1, 8);
+		tmp = create_scalar_top(num, -1, 8);
 		info.length -= tmp->length;
 		if(flag)
-			tmp->right = build_top(info, add_ver);
+			tmp->right = build_scalar_top(info, add_ver);
 		else
-			tmp->left = build_top(info, add_ver);
+			tmp->left = build_scalar_top(info, add_ver);
 	} else {
 		num = info.number & ( (1 << info.length) - 1);
-		tmp = create_top(num, info.key, info.length);
+		tmp = create_scalar_top(num, info.key, info.length);
 		if(add_ver != NULL){
 			tmp->left = add_ver->left;
 			tmp->right = add_ver->right;
@@ -87,7 +87,7 @@ struct scalar* build_top(struct data info, struct scalar *add_ver)
 
 
 //функция переделывает вершину
-struct scalar* remake(struct scalar *tmp)
+struct scalar* remake_scalar_tree(struct scalar *tmp)
 {
 	unsigned int number = 0;
 	char key = -1 , length = 0;
@@ -110,7 +110,7 @@ struct scalar* remake(struct scalar *tmp)
 		free(ver);
 	}
 	struct data info = {number, key, length, length};
-	ver = build_top(info, tmp);
+	ver = build_scalar_top(info, tmp);
 	if(tmp)
 		free(tmp);
 	return ver;
@@ -118,7 +118,7 @@ struct scalar* remake(struct scalar *tmp)
 
 
 //функция выводит длинну префикса и возвращает предыдущий бит 
-unsigned char length_prefix(struct scalar *tmp, struct data info, char *flag)
+unsigned char length_prefix_in_scalar_tree(struct scalar *tmp, struct data info, char *flag)
 {
 	unsigned char number_node = tmp->number, car, number_search_2;
 	char shift;
@@ -146,18 +146,18 @@ unsigned char length_prefix(struct scalar *tmp, struct data info, char *flag)
 }
 
 //функция разбивает вершину и добавляемую вершину на 3 вершины - общую (родительскую) и 2 дочерних
-void break_top(struct scalar **tmp, struct data info, char length, char bit)
+void break_scalar_top(struct scalar **tmp, struct data info, char length, char bit)
 {
 	struct scalar *number_node = NULL, *any_node = NULL, *top_node = NULL; 
 	unsigned char prefix = (*tmp)->number >> ((*tmp)->length - length);
 	(*tmp)->number = (prefix << ((*tmp)->length - length)) ^ (*tmp)->number;
 	(*tmp)->length -= length;
 	if(info.length + info.mask != 32){
-		top_node = create_top(prefix, -1, length);
-		number_node = build_top(info, NULL);
+		top_node = create_scalar_top(prefix, -1, length);
+		number_node = build_scalar_top(info, NULL);
 	} else
-		top_node = create_top(prefix, info.key, length);
-	any_node = remake(*tmp);
+		top_node = create_scalar_top(prefix, info.key, length);
+	any_node = remake_scalar_tree(*tmp);
 	if (bit){
 		top_node->left = any_node;
 		top_node->right = number_node;
@@ -174,10 +174,10 @@ void add_in_scalar_tree(struct scalar **head, struct data info)
 {
 	char bit;
 	if(!(*head)){
-		*head = build_top(info, NULL);
+		*head = build_scalar_top(info, NULL);
 		return;
 	}
-	char length = length_prefix(*head, info, &bit);
+	char length = length_prefix_in_scalar_tree(*head, info, &bit);
 	info.length -= length;
 	if(length == (*head)->length){
 		if(32 - info.length == info.mask)
@@ -187,7 +187,7 @@ void add_in_scalar_tree(struct scalar **head, struct data info)
 		else
 			add_in_scalar_tree(&((*head)->left), info);
 	} else {
-		break_top(head, info, length, bit);
+		break_scalar_top(head, info, length, bit);
 	}
 }
 
@@ -212,7 +212,7 @@ char search_in_scalar_tree(struct scalar *head, struct data info)
 	else
 		tmp = head->left;
 	while(tmp){
-		unsigned char length = length_prefix(tmp, info, &bit);
+		unsigned char length = length_prefix_in_scalar_tree(tmp, info, &bit);
 		if(length == tmp->length){ 
 			info.length -= length;
 			if(tmp->key != -1)
@@ -233,7 +233,7 @@ void del_from_scalar_tree(struct scalar **head, struct data info)
 	struct scalar *tmp = *head, *parent = *head, *grand = *head;
 	char flag_parent, flag_grand, bit;
 	while(tmp){
-		unsigned char length = length_prefix(tmp, info, &bit);
+		unsigned char length = length_prefix_in_scalar_tree(tmp, info, &bit);
 		if(length != tmp->length)
 			return;
 		info.length -= length;
@@ -254,17 +254,17 @@ void del_from_scalar_tree(struct scalar **head, struct data info)
 	}
 	if(tmp->left || tmp->right){
 		tmp->key = -1;
-		*head = remake(parent);
+		*head = remake_scalar_tree(parent);
 		return;
 	} else if(flag_parent) {
-		delete_tree(&(parent->right));
+		delete_scalar_tree(&(parent->right));
 		parent->right = NULL;
 	} else {
-		delete_tree(&(parent->left));
+		delete_scalar_tree(&(parent->left));
 		parent->left = NULL;
 	}
 	if(parent == *head)
-		*head = remake(*head);
+		*head = remake_scalar_tree(*head);
 	else if(flag_grand)
 		grand->right = remake(grand->right);
 	else
@@ -375,7 +375,7 @@ int main()
 	//print_tree(root);
 	char search_key = search_in_scalar_tree(root, info);
 	printf("ключ поиска = %d\n", search_key);
-	delete_tree(&root);
+	delete_scalar_tree(&root);
 	print_tree(root);
 	return 0;
 }

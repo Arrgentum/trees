@@ -1,4 +1,21 @@
+#include <stdlib.h>
 #include "compressed.h"
+
+
+
+int find_numer_node(struct compressed *root){
+	if (root){
+		int left = 0, right = 0;
+		if(root->left)
+			left = find_numer_node(root->left);
+		if (root->right)
+			right = find_numer_node(root->right);
+		return left + right + 1;
+	} else {
+		return 0;
+	}
+
+}
 
 
 //удаления дерева 
@@ -269,6 +286,26 @@ void delete_from_compressed_tree(struct compressed **head, struct data info)
 		del_from_compressed_tree(&((*head)->left), info);
 }
 
+
+static void display_mallinfo2(void)
+{
+   struct mallinfo mi;
+
+   mi = mallinfo();
+
+   printf("Total non-mmapped bytes (arena):       %lu\n", mi.arena);
+   printf("# of free chunks (ordblks):            %lu\n", mi.ordblks);
+   printf("# of free fastbin blocks (smblks):     %lu\n", mi.smblks);
+   printf("# of mapped regions (hblks):           %lu\n", mi.hblks);
+   printf("Bytes in mapped regions (hblkhd):      %lu\n", mi.hblkhd);
+   printf("Max. total allocated space (usmblks):  %lu\n", mi.usmblks);
+   printf("Free bytes held in fastbins (fsmblks): %lu\n", mi.fsmblks);
+   printf("Total allocated space (uordblks):      %lu\n", mi.uordblks);
+   printf("Total free space (fordblks):           %lu\n", mi.fordblks);
+   printf("Topmost releasable block (keepcost):   %lu\n", mi.keepcost);
+}
+
+
 int main()
 {
 	unsigned int max_key = 0, mask_length = 32, delta = 1, line_number = 0;
@@ -290,12 +327,30 @@ int main()
 	else 
 		line_number = max - min;
 
+	display_mallinfo2();
+	//sleep(10);
 	for(int i = 0; i < line_number; i++){
 		info.key = i % max_key;
 		info.mask = 32 - rand() % (32 - mask_length);
-		printf("number  = %d, mask = %d, key = %d\n", info.number, info.mask, info.key);
+		//printf("number  = %d, mask = %d, key = %d\n", info.number, info.mask, info.key);
 		insert_in_compressed_tree(&root, info);
 		info.number += delta;
 	}
-	print_tree(root);
+	//sleep(10);
+	int node_number = find_numer_node(root);
+	printf("node number = %d\n", node_number);
+	/*union ticks{
+	unsigned long long t64;
+	struct s32 { long th, tl; } t32;
+	} start, end;
+	double cpu_Hz = 3000000000ULL; // for 3 GHz CPU
+	asm("rdtsc\n":"=a"(start.t32.th),"=d"(start.t32.tl));
+    int search_key = search_in_compressed_tree(root, info);
+    asm("rdtsc\n":"=a"(end.t32.th),"=d"(end.t32.tl));
+	printf("Proscess tact : %lld\n", end.t64-start.t64 );
+	printf("Time taken: %lf sec.\n", (end.t64-start.t64)/cpu_Hz);*/
+	//printf("search key = %d\n", search_key);
+	//print_tree(root);
+	display_mallinfo2();
+	return 0;
 }

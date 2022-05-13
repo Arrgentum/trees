@@ -1,6 +1,9 @@
 #ifndef COMPRESSED_H_   /* Include guard */
 #define COMPRESSED_H_
 
+
+#include <unistd.h> 
+#include <malloc.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,11 +12,11 @@
 
 
 struct compressed{
+	struct compressed *left;
+	struct compressed *right;
 	unsigned int number;
 	char key;
 	char length;
-	struct compressed *left;
-	struct compressed *right;
 };
 
 

@@ -1,6 +1,19 @@
-#include <stdlib.h>
-
 #include"range.h"
+
+
+int find_numer_node(struct range *root){
+	if (root){
+		int left = 0, right = 0;
+		if(root->left)
+			left = find_numer_node(root->left);
+		if (root->right)
+			right = find_numer_node(root->right);
+		return left + right + 1;
+	} else {
+		return 0;
+	}
+
+}
 
 
 void print_tree(struct range *root)
@@ -90,6 +103,7 @@ void fixheight(struct range **head)
 
 struct range* small_left_rotation(struct range* head)
 {
+	printf("small_left_rotation\n");
 	struct range* new_head = head->right;
 	head->right = new_head->left;
 	new_head->left = head;
@@ -102,6 +116,7 @@ struct range* small_left_rotation(struct range* head)
 
 struct range* small_right_rotation(struct range* head)
 {
+	printf("small_right_rotation\n");
 	struct range *new_head = head->left;
 	head->left = new_head->right;
 	new_head->right = head;
@@ -114,7 +129,7 @@ struct range* small_right_rotation(struct range* head)
 
 struct range* big_left_rotation(struct range* head)
 {
-	print_tree(head);
+	printf("big_left_rotation\n");
 	head->right = small_right_rotation(head->right);
 	head = small_left_rotation(head);
 	return head;
@@ -122,6 +137,7 @@ struct range* big_left_rotation(struct range* head)
 
 struct range* big_right_rotation(struct range* head)
 {
+	printf("big_right_rotation\n");
 	head->left = small_left_rotation(head->left);
 	head = small_right_rotation(head);
 	return head;
@@ -258,6 +274,27 @@ void delete_from_range_tree(struct range** head, struct data info)
 }
 
 
+static void display_mallinfo2(void)
+{
+   struct mallinfo mi;
+
+   mi = mallinfo();
+
+   printf("Total non-mmapped bytes (arena):       %u\n", mi.arena);
+   printf("# of free chunks (ordblks):            %u\n", mi.ordblks);
+   printf("# of free fastbin blocks (smblks):     %u\n", mi.smblks);
+   printf("# of mapped regions (hblks):           %u\n", mi.hblks);
+   printf("Bytes in mapped regions (hblkhd):      %u\n", mi.hblkhd);
+   printf("Max. total allocated space (usmblks):  %u\n", mi.usmblks);
+   printf("Free bytes held in fastbins (fsmblks): %u\n", mi.fsmblks);
+   printf("Total allocated space (uordblks):      %u\n", mi.uordblks);
+   printf("Total free space (fordblks):           %u\n", mi.fordblks);
+   printf("Topmost releasable block (keepcost):   %u\n", mi.keepcost);
+}
+
+
+typedef unsigned long long ull;
+
 int main()
 {
 	unsigned int max_key = 0, mask_length = 32, delta = 1, line_number = 0;
@@ -279,13 +316,35 @@ int main()
 	else 
 		line_number = max - min;
 
+	display_mallinfo2();
+	//sleep(10);
 	for(int i = 0; i < line_number; i++){
 		info.key = i % max_key;
 		info.mask = 32 - rand() % (32 - mask_length);
 		printf("number  = %d, mask = %d, key = %d\n", info.number, info.mask, info.key);
 		insert_in_range_tree(&root, info);
+		print_tree(root);
 		info.number += delta;
 	}
-	print_tree(root);
-
+	int node_number = find_numer_node(root);
+	printf("node_number = %d\n", node_number);
+	/*union ticks{
+	unsigned long long t64;
+	struct s32 { long th, tl; } t32;
+	} start, end;
+	double cpu_Hz = 3000000000ULL; // for 3 GHz CPU
+	asm("rdtsc\n":"=a"(start.t32.th),"=d"(start.t32.tl));
+    int search_key = search_in_range_tree(root, info);
+    asm("rdtsc\n":"=a"(end.t32.th),"=d"(end.t32.tl));
+    printf("Proscess tact : %lld\n", end.t64-start.t64 );
+	printf("Time taken: %lf sec.\n", (end.t64-start.t64)/cpu_Hz);*/
+    //__asm rdtsc;
+    //__asm sub eax,[clock];
+    //__asm mov [clock], eax;
+    // количество тактов процессора на вычисления
+    //printf("%u, %d", clock, search_key);
+	//print_tree(root);
+	display_mallinfo2();
+	//sleep(10);
+	return 0;
 }

@@ -1,6 +1,9 @@
 #ifndef RANGE_H_   /* Include guard */
 #define RAHGE_H_
 
+#include <unistd.h> 
+#include <malloc.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include "data.h"
 
